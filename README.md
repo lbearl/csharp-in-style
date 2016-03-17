@@ -2,14 +2,13 @@
 
 These documents contain guidelines for writing consistent, lucid, enticing, modern C#.
 
-If you take issue with anything here, please open a pull request with your recommended changes and include an argument for *and against* their adoption; explain the benefits of your proposed change, and also any drawbacks.
-
 ## Guiding Principles
 
 * Be consistent.
 * Don't rewrite existing code to follow this guide.
 * Don't violate a guideline without a good reason.
 * A reason is good when you can convince a teammate, not just when you like it.
+* Any reasons for violating the style should be documented in the code.
 * Assume your reader knows C# and English.
 * Prefer clarity to 'performance'.
 * Prefer clarity to .NET dogma.
@@ -17,13 +16,15 @@ If you take issue with anything here, please open a pull request with your recom
 
 ## The Rundown
 
-* Indent with tabs.
+* Indent with spaces.
 * Max line length is 100 columns.
 * Use spaces and empty lines precisely.
 * Braces generally go on their own lines.
 * Never put a space before `[`.
 * Always put a space before `{`.
 * Always put a space before `(` except for method invocations or when following another `(`.
+* NEVER have a double slash (//) comment outside of a function
+* Always have a triple slash XML-Doc comment (///) for all classes, interfaces, and top level entities (i.e. functions, class members, etc.)
 
 ## Specific Guides
 
@@ -84,7 +85,7 @@ public string Name {
 
 Group using directives by common prefix, with shorter namespaces coming before longer ones, creating neat clusters of statements separated by single empty lines.
 
-Namespaces should be ordered in increasing order of platform specificity, with .NET namespaces first, then library or component namespaces, then Xamarin namespaces, then application namespaces:
+Namespaces should be ordered in increasing order of platform specificity, with .NET namespaces first, then library or component namespaces, then application namespaces:
 
 ```csharp
 // Beautiful:
@@ -94,9 +95,6 @@ using System.Collections.Generic;
 
 using MyLib;
 using MyLib.Extensions;
-
-using MonoTouch.UIKit;
-using MonoTouch.Foundation;
 
 using MyApp;
 
@@ -110,7 +108,7 @@ using MonoTouch.UIKit;
 using MyLib;
 ```
 
-Prune redundant namespaces aggressively.
+Prune redundant namespaces aggressively. Resharper can aid in this.
 
 ### Declaring Types
 
@@ -167,13 +165,7 @@ class MyClass: BaseClass, IDoesThis
 
 #### Enums
 
-Simple enums may be defined on a single line:
-
-```csharp
-enum Edge { Left, Right, Bottom, Top }
-```
-
-Larger enums should list entries on separate lines and always end in a comma:
+All enums should list values and list entries on separate lines and always end in a comma:
 
 ```csharp
 enum StringSplitOptions
@@ -245,11 +237,14 @@ Complex properties go like this:
 
 ```csharp
 // Perfect.
-string Name {
-	get {
+string Name 
+{
+	get 
+	{
 		return name;
 	}
-	set {
+	set 
+	{
 		name = value;
 	}
 }
@@ -257,9 +252,7 @@ string Name {
 
 ### Type Inference
 
-Use it. Less typing is almost always better than more typing, with some important exceptions.
-
-Use `var` when the type is repeated on the right-hand side of the assignment:
+Use it. Less typing is almost always better than more typing.
 
 ```csharp
 // Perfect!
@@ -267,20 +260,6 @@ var users = new Dictionary<UserId, User>();
 
 // Bloated.
 Dictionary<UserId, User> users = new Dictionary<UserId, User>();
-```
-
-Don't use `var` for capturing the return type of a method or property when the type is not evident:
-
-```csharp
-// Horrendous.
-var things = Interpret(data);
-
-// Much better.
-HashMap<Thing> things = Interpret(data);
-
-// Even better.
-var things = InterpretAs<Thing>(data);
-
 ```
 
 Omit the type when using array initializers:
@@ -304,7 +283,8 @@ For simple initializers, you may do a one-liner:
 var person = new Person("Vinny") { Age = 50 };
 
 // Acceptable.
-var person = new Person("Vinny") {
+var person = new Person("Vinny") 
+{
 	Age = 50,
 };
 ```
@@ -315,7 +295,7 @@ Omit the `()` when using parameterless constructors:
 // Perfect.
 var person = new Person { Name = "Bob", Age = 75 };
 
-// Wrong.
+// Less perfect
 var person = new Person() { Name = "Bob", Age = 75 };
 ```
 
@@ -323,19 +303,21 @@ In general, each expression should be on a separate line, and every line should 
 
 ```csharp
 // Very nice collection initializer.
-var entries = new Dictionary<string, int> {
+var entries = new Dictionary<string, int> 
+{
 	{ "key1", 1 },
 	{ "key2", 2 },
 };
 
 // Very nice object initializer.
-var contact = new Person {
+var contact = new Person 
+{
 	Name = "David Siegel",
 	SocialSecurityNumber = 123456789,
 	Address = "1234 Montgomery Circle Drive East",
 };
 
-// Bad collection initializer – multiple entries on one line.
+// Bad collection initializer – multiple entries on one line, and opening brace isn't on newline.
 var entries = new Dictionary<string, int> {
 	{ "key1", 1 }, { "key2", 2 },
 };
@@ -343,14 +325,20 @@ var entries = new Dictionary<string, int> {
 
 ### Indentation
 
-`switch` statements have the case at the same indentation as the `switch`:
+`switch` statements are indented as expected inside of braces. All switches must have a default case unless there is a justifyable reason not to. All cases must have a `break` statement unless their is justification to not.
 
 ```csharp
-switch (x) {
-case 'a':
-	...
-case 'b':
-	...
+switch (x) 
+{
+	case 'a':
+		...
+		break;
+	case 'b':
+		...
+		break;
+	default:
+		...
+		break;
 }
 ```
 
@@ -417,29 +405,29 @@ var users = new Dictionary<UserId, User>();
 var users = new Dictionary<UserId,User>();
 ```
 
-Put a space between the type and the indentifier what casting:
+Do not put a space between the type and the indentifier what casting:
 
 ```csharp
 // Great.
-var person = (Person) sender;
+var person = (Person)sender;
 
 // Bad.
-var person = (Person)sender;
+var person = (Person) sender;
 ```
 
 ### Where to put braces
 
-Inside a code block, put the opening brace on the same line as the statement:
+Inside a code block, put the opening brace on a new line:
 
 ```csharp
 // Lovely.
-if (you.Love (someone)) {
+if (you.Love (someone)) 
+{
 	someone.SetFree();
 }
 
 // Wrong.
-if (you.Love (someone))
-{
+if (you.Love (someone)){
 	someone.SetFree();
 }
 ```
@@ -452,7 +440,8 @@ if (you.Like (it))
 	it.PutOn(ring);
 
 // Acceptable.
-if (you.Like (it)) {
+if (you.Like (it)) 
+{
 	it.PutOn(ring);
 }
 ```
@@ -474,14 +463,17 @@ Always use braces with nested or multi-line conditions:
 
 ```csharp
 // Perfect.
-if (a) {
-	if (b) {
+if (a) 
+{
+	if (b) 
+	{
 		code();
 	}
 }
 
 // Acceptable.
-if (a) {
+if (a) 
+{
 	if (b)
 		code();
 }
@@ -505,20 +497,21 @@ void LaunchRockets() {
 }
 ```
 
-When defining a property, keep the opening brace on the same line:
+When defining a property, put the opening brace on a new line:
 
 ```csharp
 // Perfect.
-double AverageAge {
-	get {
+double AverageAge 
+{
+	get 
+	{
 		return people.Average (p => p.Age);
 	}
 }
 
 
 // Wrong.
-double AverageAge
-{
+double AverageAge{
 	get {
 		return people.Average(p => p.Age);
 	}
@@ -533,17 +526,21 @@ For very small properties, you can compress things:
 
 ```csharp
 // Preferred.
-int Property {
+int Property 
+{
 	get { return value; }
 	set { x = value; }
 }
 
 // Acceptable.
-int Property {
-	get {
+int Property 
+{
+	get 
+	{
 		return value;
 	}
-	set {
+	set 
+	{
 		x = value;
 	}
 }
@@ -579,22 +576,22 @@ If statements with else clauses are formatted like this:
 good:
 
 ```csharp
-if (dingus) {
-        ...
-} else {
-        ... 
+if (dingus) 
+{
+    ...
+} 
+else 
+{
+    ... 
 }
 ```
 
 bad:
 
 ```csharp
-if (dingus) 
-{
+if (dingus) {
         ...
-} 
-else 
-{
+} else {
         ... 
 }
 ```
@@ -630,19 +627,6 @@ namespace MyApp {
 	}
 }
 ```
-
-To summarize:
-
-| Statement	                 | Brace position |
-|--------------------------------|----------------|
-| Namespace                      | new line |
-| Type                           | new line |
-| Methods                        | new line |
-| Constructors                   | new line |
-| Destructors                    | new line |
-| Properties                     | same line |
-| Control blocks (if, for...)    | same line |
-| Anonymous types and methods    | same line |
 
 ### Long Argument Lists
 
@@ -710,54 +694,53 @@ void Method(string my_string)
 
 ### Instance Fields
 
-Don't use  `m_` or `_` as prefixes for instance fields. Just use normal parameter naming conventions:
+All private instance variables should be prefixed with _
 
 ```csharp
 // Perfect.
 class Person
 {
-	string name;
+	private string _name;
 }
+
 
 // Wrong.
 class Person
 {
-	string m_name;
+	string name;
 }
 ```
 
-Don't write `private` for private members, as this is the default visibility in C#:
+Always be explicit about what the scope of a variable should be (i.e. private, protected, etc.)
 
 ```csharp
 // Perfect.
-class Person
-{
-	string name;
-}
-
-// Wrong.
 class Person
 {
 	private string name;
 }
-```
 
-An exception to this rule is serializable classes. In this case, if we desire to have our serialized data be compatible with Microsoft's, we must use the same field name.
+// Wrong.
+class Person
+{
+	string name;
+}
+```
 
 ### `this`
 
-The use of "this." as a prefix in code is discouraged, it is mostly redundant. In general, since internal variables are lowercase and anything that becomes public starts with an uppercase letter, there is no ambiguity between what the "Foo" and "foo" are. The first is a public property or field, the second is internal property or field.
+The use of "this." as a prefix in code is discouraged, it is mostly redundant. In general, since internal variables are lowercase and anything that becomes public starts with an uppercase letter, there is no ambiguity between what the "Foo" and "foo" are. The first is a public property or field, the second is internal property.
 
 Good:
 
 ```csharp
 class Foo
 {
-	int bar;
+	private int _bar;
  
 	void Update(int newValue)
 	{
-		bar = newValue;
+		_bar = newValue;
 	}
  
 	void Clear()
@@ -786,7 +769,7 @@ class Foo
 }
 ```
 
-An exception is made for `this` when the parameter name is the same as an instance variable, this happens sometimes in constructors or if naming is difficult:
+An exception is made for `this` when the parameter name is the same as an instance variable, this happens sometimes in constructors or if naming is difficult. Unless there is a justifyable reason, doing this should be strongly avoided:
 
 Good:
 
@@ -803,5 +786,7 @@ class Message
 ```
 
 ## Credits
+
+This variant of C# in Style was stolen mostly from [Here](https://github.com/dvdsgl/csharp-in-style)
 
 This guide was adapted from the [Mono coding guidelines](http://www.mono-project.com/Coding_Guidelines) with inspiration from thoughtbot's excellent [guide for programming in style](https://github.com/thoughtbot/guides) and [The LLVM Coding Standards](http://llvm.org/docs/CodingStandards.html).
